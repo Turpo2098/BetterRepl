@@ -1,0 +1,155 @@
+package tf.tfischer.betterrepl.listener;
+
+import com.palmergames.bukkit.towny.Towny;
+import com.palmergames.bukkit.towny.object.TownyPermission;
+import com.palmergames.bukkit.towny.utils.PlayerCacheUtil;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.flags.Flags;
+import com.sk89q.worldguard.protection.regions.RegionQuery;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Container;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import tf.tfischer.betterrepl.BetterRepl;
+import tf.tfischer.betterrepl.util.NBTManager;
+
+public class ReplUsage implements Listener {
+    private BetterRepl betterRepl;
+    boolean townyIsActive;
+    boolean worldGuardIsActive;
+
+    public ReplUsage(BetterRepl betterRepl){
+        this.betterRepl     = betterRepl;
+        townyIsActive       = betterRepl.isTownyActive();
+        worldGuardIsActive  = betterRepl.isWorldGuardActive();
+    }
+
+    @EventHandler
+    public void onInteractEvent(PlayerInteractEvent event){
+        if(!event.hasBlock())
+            return;
+        if(!event.hasItem())
+            return;
+
+        NBTManager  nbtManager      = new NBTManager(betterRepl);
+        ItemStack   itemStack       = event.getItem();
+        String      nbt             = nbtManager.getSpecificNBTData(itemStack,"BetterRepl");
+        if(nbt == null || !nbt.equals("T"))             //check if it is a REPL Tool
+            return;
+
+        Player executor = event.getPlayer();
+
+        event.setCancelled(true);
+
+        if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){  //Save a Block
+            BlockState blockStateNew = event.getClickedBlock().getState();  //Ignore warning because if-clause
+
+            if(isForbidden(event.getClickedBlock().getState())){        //Forbid saving Inventory Blocks
+                executor.sendMessage("§aDu darfst diesen nicht Block verwenden!");
+                return;
+            }
+
+            betterRepl.getPlayerStateHashMap().put(executor,blockStateNew);
+            executor.sendMessage("§aDu hast ein BlockState gespeichert!");
+
+            return;
+        }
+
+        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) { //Load a Block
+            BlockState blockState = betterRepl.getPlayerStateHashMap().get(executor);
+
+            boolean hasBlockStateLoaded = blockState == null;
+            if(hasBlockStateLoaded) {
+                executor.sendMessage("§aLade erst mal einen BlockState mit LinksClick");
+                return;
+            }
+
+
+            Block clickedBlock = event.getClickedBlock();
+            if(!executor.hasPermission("betterrepl.bypass")) {   //Bypasspermission
+
+                boolean townyAllowsBuilding = townyIsActive && !canBuildInTowny(executor, event.getClickedBlock()); //Ignore warning becuase of null
+                if (townyAllowsBuilding) {
+                    executor.sendMessage("§aDu kannst nicht wegen Towny bauen!");
+                    return;
+                }
+
+                boolean worldGuardAllowsBuilding = worldGuardIsActive && !canBuildInWorldGuard(executor);
+                if (worldGuardAllowsBuilding) {
+                    executor.sendMessage("§aWorldGuard verbietet dir das!");
+                    return;
+                }
+
+            }
+
+            boolean     isSameBlock     = clickedBlock.getType().equals(blockState.getType());
+
+            if(!isSameBlock){
+                if(clickedBlock.getType().equals(Material.DIRT)) {
+                    World       world       = clickedBlock.getWorld();
+                    Location    location    = blockState.getLocation();
+                    BlockData blockData = Bukkit.getWorld(world.getUID()).getBlockData(location);
+                    if(blockData != null && blockData.equals(blockState.getBlockData())){
+                        Location    oldLocation     = blockState.getLocation();
+
+                        betterRepl.getPlayerStateHashMap().put(executor,null);
+                        clickedBlock.setBlockData(blockState.getBlockData().clone());
+
+
+                        BlockState  oldBlockState   = world.getBlockState(oldLocation);
+                        oldBlockState.setType(Material.AIR);
+
+                        world.setBlockData(location,oldBlockState.getBlockData());
+
+                        executor.sendMessage("§aDas repln wurde durchgeführt!");
+                        return;
+                    }
+                    executor.sendMessage("§aNichts klonen!!!!");
+                    return;
+
+                }
+                executor.sendMessage("§aDas ist nicht derselbe Block!");
+                return;
+            }
+
+            clickedBlock.setBlockData(blockState.getBlockData().clone());
+            executor.sendMessage("§aDas repln wurde durchgeführt!");
+        }
+    }
+
+    private boolean isForbidden(BlockState blockState){
+        return blockState instanceof Container;
+    }
+
+    private boolean canBuildInWorldGuard(Player player){
+        //Yoinked out of https://www.spigotmc.org/threads/worldguard-7-0-0-check-if-player-can-build.356669/
+
+        boolean result = true;
+
+        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
+        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
+        com.sk89q.worldedit.world.World world = BukkitAdapter.adapt(player.getWorld());
+        if (!WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(WorldGuardPlugin.inst().wrapPlayer(player), world)) {
+            result = query.testState(loc, WorldGuardPlugin.inst().wrapPlayer(player), Flags.BUILD);
+        }
+        return result;
+    }
+
+    private boolean canBuildInTowny(Player player, Block block){
+        //Yoinked out of https://github.com/TownyAdvanced/Towny/wiki/TownyAPI#checking-if-a-player-can-builddestroy-somewhere
+        boolean bBuild = PlayerCacheUtil.getCachePermission(player, block.getLocation(), block.getType(), TownyPermission.ActionType.BUILD);
+        return bBuild;
+    }
+}

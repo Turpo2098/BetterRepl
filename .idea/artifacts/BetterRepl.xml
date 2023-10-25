@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="BetterRepl">
+    <output-path>$USER_HOME$/Desktop/Server/1.19.2/plugins</output-path>
+    <root id="archive" name="BetterRepl.jar">
+      <element id="module-output" name="BetterRepl" />
+      <element id="library" level="project" name="Maven: org.jetbrains:annotations:24.0.1" />
+    </root>
+  </artifact>
+</component>

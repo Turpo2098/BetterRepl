@@ -101,6 +101,7 @@ public class ReplUsage implements Listener {
                     World       world       = clickedBlock.getWorld();
                     Location    location    = blockState.getLocation();
                     BlockData blockData = Bukkit.getWorld(world.getUID()).getBlockData(location);
+
                     if(blockData != null && blockData.equals(blockState.getBlockData())){
                         Location    oldLocation     = blockState.getLocation();
 
@@ -113,6 +114,7 @@ public class ReplUsage implements Listener {
 
                         world.setBlockData(location,oldBlockState.getBlockData());
 
+                        givePlayerDirt(executor);
                         executor.sendMessage("§aDas repln wurde durchgeführt!");
                         return;
                     }
@@ -127,6 +129,11 @@ public class ReplUsage implements Listener {
             clickedBlock.setBlockData(blockState.getBlockData().clone());
             executor.sendMessage("§aDas repln wurde durchgeführt!");
         }
+    }
+
+    private void givePlayerDirt(Player player){
+        player.getInventory().addItem(new ItemStack(Material.DIRT));
+        player.updateInventory();
     }
 
     private boolean isForbidden(BlockState blockState){

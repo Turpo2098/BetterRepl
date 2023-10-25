@@ -1,6 +1,5 @@
 package tf.tfischer.betterrepl.listener;
 
-import com.palmergames.bukkit.towny.Towny;
 import com.palmergames.bukkit.towny.object.TownyPermission;
 import com.palmergames.bukkit.towny.utils.PlayerCacheUtil;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -25,8 +24,10 @@ import org.bukkit.inventory.ItemStack;
 import tf.tfischer.betterrepl.BetterRepl;
 import tf.tfischer.betterrepl.util.NBTManager;
 
+import java.util.Map;
+
 public class ReplUsage implements Listener {
-    private BetterRepl betterRepl;
+    private final BetterRepl betterRepl;
     boolean townyIsActive;
     boolean worldGuardIsActive;
 
@@ -38,9 +39,9 @@ public class ReplUsage implements Listener {
 
     @EventHandler
     public void onInteractEvent(PlayerInteractEvent event){
-        if(!event.hasBlock())
+        if(event.getClickedBlock() == null)
             return;
-        if(!event.hasItem())
+        if(event.getItem() == null)
             return;
 
         NBTManager  nbtManager      = new NBTManager(betterRepl);
@@ -53,24 +54,26 @@ public class ReplUsage implements Listener {
 
         event.setCancelled(true);
 
+        Map<Player,BlockState>  blockStateMap = betterRepl.getPlayerStateHashMap();
+
         if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){  //Save a Block
-            BlockState blockStateNew = event.getClickedBlock().getState();  //Ignore warning because if-clause
+            BlockState newBlockState = event.getClickedBlock().getState();  //Ignore warning because if-clause
 
             if(isForbidden(event.getClickedBlock().getState())){        //Forbid saving Inventory Blocks
                 executor.sendMessage("§aDu darfst diesen nicht Block verwenden!");
                 return;
             }
 
-            betterRepl.getPlayerStateHashMap().put(executor,blockStateNew);
+            blockStateMap.put(executor,newBlockState);
             executor.sendMessage("§aDu hast ein BlockState gespeichert!");
 
             return;
         }
 
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) { //Load a Block
-            BlockState blockState = betterRepl.getPlayerStateHashMap().get(executor);
+            BlockState savedBlockState = blockStateMap.get(executor);
 
-            boolean hasBlockStateLoaded = blockState == null;
+            boolean hasBlockStateLoaded = savedBlockState == null;
             if(hasBlockStateLoaded) {
                 executor.sendMessage("§aLade erst mal einen BlockState mit LinksClick");
                 return;
@@ -94,25 +97,25 @@ public class ReplUsage implements Listener {
 
             }
 
-            boolean     isSameBlock     = clickedBlock.getType().equals(blockState.getType());
+            boolean     isTheSameBlock     = clickedBlock.getType().equals(savedBlockState.getType());
 
-            if(!isSameBlock){
-                if(clickedBlock.getType().equals(Material.DIRT)) {
+            if(!isTheSameBlock){
+
+                boolean hasClickedDirt = clickedBlock.getType().equals(Material.DIRT);
+
+                if(hasClickedDirt) {
                     World       world       = clickedBlock.getWorld();
-                    Location    location    = blockState.getLocation();
+                    Location    location    = savedBlockState.getLocation();
                     BlockData blockData = Bukkit.getWorld(world.getUID()).getBlockData(location);
 
-                    if(blockData != null && blockData.equals(blockState.getBlockData())){
-                        Location    oldLocation     = blockState.getLocation();
+                    boolean oldBlockHasntChanged = blockData != null && blockData.equals(savedBlockState.getBlockData());
+                    if(oldBlockHasntChanged){
+                        Location    oldLocation     = savedBlockState.getLocation();
 
-                        betterRepl.getPlayerStateHashMap().put(executor,null);
-                        clickedBlock.setBlockData(blockState.getBlockData().clone());
+                        resetSavedBlock(executor);
+                        clickedBlock.setBlockData(savedBlockState.getBlockData().clone());
 
-
-                        BlockState  oldBlockState   = world.getBlockState(oldLocation);
-                        oldBlockState.setType(Material.AIR);
-
-                        world.setBlockData(location,oldBlockState.getBlockData());
+                        setLocationAir(oldLocation);
 
                         givePlayerDirt(executor);
                         executor.sendMessage("§aDas repln wurde durchgeführt!");
@@ -126,9 +129,20 @@ public class ReplUsage implements Listener {
                 return;
             }
 
-            clickedBlock.setBlockData(blockState.getBlockData().clone());
+            clickedBlock.setBlockData(savedBlockState.getBlockData().clone());
             executor.sendMessage("§aDas repln wurde durchgeführt!");
         }
+    }
+
+    private void setLocationAir(Location location){
+        World       world           = location.getWorld();
+        BlockState  oldBlockState   = world.getBlockState(location);
+        oldBlockState.setType(Material.AIR);
+        world.setBlockData(location,oldBlockState.getBlockData());
+    }
+
+    private void resetSavedBlock(Player player){
+        betterRepl.getPlayerStateHashMap().remove(player);
     }
 
     private void givePlayerDirt(Player player){
@@ -156,7 +170,6 @@ public class ReplUsage implements Listener {
 
     private boolean canBuildInTowny(Player player, Block block){
         //Yoinked out of https://github.com/TownyAdvanced/Towny/wiki/TownyAPI#checking-if-a-player-can-builddestroy-somewhere
-        boolean bBuild = PlayerCacheUtil.getCachePermission(player, block.getLocation(), block.getType(), TownyPermission.ActionType.BUILD);
-        return bBuild;
+        return PlayerCacheUtil.getCachePermission(player, block.getLocation(), block.getType(), TownyPermission.ActionType.BUILD);
     }
 }

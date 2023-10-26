@@ -62,7 +62,7 @@ public class ReplUsage implements Listener {
             }
 
             blockStateMap.put(executor,newBlockState);
-            executor.sendMessage("§aDu hast ein BlockState gespeichert!");
+            executor.sendMessage("§aDu hast den Block §6" + newBlockState.getType().name() + " §agespeichert!");
             playSaveSound(executor,executor.getLocation());
 
             return;
@@ -73,7 +73,7 @@ public class ReplUsage implements Listener {
 
             boolean hasBlockStateLoaded = savedBlockState == null;
             if(hasBlockStateLoaded) {
-                executor.sendMessage("§aLade erst mal einen BlockState mit LinksClick");
+                executor.sendMessage("§aStudiere erst einmal einen Block mit deinem Hammer!");
                 return;
             }
 
@@ -83,13 +83,13 @@ public class ReplUsage implements Listener {
 
                 boolean townyAllowsBuilding = townyIsActive && !canBuildInTowny(executor, event.getClickedBlock()); //Ignore warning becuase of null
                 if (townyAllowsBuilding) {
-                    executor.sendMessage("§aDu kannst nicht wegen Towny bauen!");
+                    executor.sendMessage("§cDu kannst nicht wegen Towny bauen!");
                     return;
                 }
 
                 boolean worldGuardAllowsBuilding = worldGuardIsActive && !canBuildInWorldGuard(executor);
                 if (worldGuardAllowsBuilding) {
-                    executor.sendMessage("§aWorldGuard verbietet dir das!");
+                    executor.sendMessage("§cWorldGuard verbietet dir das!");
                     return;
                 }
 
@@ -117,20 +117,20 @@ public class ReplUsage implements Listener {
 
                         givePlayerDirt(executor);
                         playUseSound(executor,clickedBlock.getLocation());
-                        executor.sendMessage("§aDas repln wurde durchgeführt!");
+                        executor.sendMessage("§aDas den Block verändert!");
                         return;
                     }
                     executor.sendMessage("§aNichts klonen!!!!");
                     return;
 
                 }
-                executor.sendMessage("§aDas ist nicht derselbe Block!");
+                executor.sendMessage("§aDas ist nicht derselbe Block! Benutze §6" + savedBlockState.getType().name() + "§a!" );
                 return;
             }
 
             clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);
             playUseSound(executor,clickedBlock.getLocation());
-            executor.sendMessage("§aDas repln wurde durchgeführt!");
+            executor.sendMessage("§aDas den Block verändert!");
         }
     }
 

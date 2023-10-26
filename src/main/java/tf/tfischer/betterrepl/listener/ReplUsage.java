@@ -17,6 +17,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import tf.tfischer.betterrepl.BetterRepl;
 import tf.tfischer.betterrepl.util.NBTManager;
@@ -108,13 +109,19 @@ public class ReplUsage implements Listener {
 
                     boolean oldBlockHasntChanged = blockData != null && blockData.equals(savedBlockState.getBlockData());
                     if(oldBlockHasntChanged){
-                        Location    oldLocation     = savedBlockState.getLocation();
+                        Location    oldLocation         = savedBlockState.getLocation();
+                        Material    savedMaterial       = savedBlockState.getType();
+                        Inventory   executorsInventory  = executor.getInventory();
 
-                        resetSavedBlock(executor);
+
+                        boolean hasItemInInventory = executorsInventory.contains(savedMaterial);
+                        if(hasItemInInventory){
+                            removeOneItem(executor,savedMaterial);
+                        } else {
+                            resetSavedBlock(executor);
+                            setLocationAir(oldLocation);
+                        }
                         clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);
-
-                        setLocationAir(oldLocation);
-
                         givePlayerDirt(executor);
                         playUseSound(executor,clickedBlock.getLocation());
                         executor.sendMessage("§aDas den Block verändert!");
@@ -131,6 +138,15 @@ public class ReplUsage implements Listener {
             clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);
             playUseSound(executor,clickedBlock.getLocation());
             executor.sendMessage("§aDas den Block verändert!");
+        }
+    }
+
+    private void removeOneItem(Player player, Material material){
+        for(ItemStack item : player.getInventory()){
+            if(item.getType().equals(material)){
+                item.setAmount(item.getAmount()-1);
+                break;
+            }
         }
     }
 

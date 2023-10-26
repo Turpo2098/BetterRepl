@@ -14,10 +14,6 @@ public class PlayerDisconnect implements Listener {
         this.betterRepl = betterRepl;
     }
 
-    public PlayerDisconnect(tf.tfischer.betterrepl.BetterRepl betterRepl) {
-
-    }
-
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event){
         Player player = event.getPlayer();

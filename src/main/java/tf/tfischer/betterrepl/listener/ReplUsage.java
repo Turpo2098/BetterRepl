@@ -7,10 +7,7 @@ import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
@@ -66,6 +63,7 @@ public class ReplUsage implements Listener {
 
             blockStateMap.put(executor,newBlockState);
             executor.sendMessage("§aDu hast ein BlockState gespeichert!");
+            playSaveSound(executor,executor.getLocation());
 
             return;
         }
@@ -113,11 +111,12 @@ public class ReplUsage implements Listener {
                         Location    oldLocation     = savedBlockState.getLocation();
 
                         resetSavedBlock(executor);
-                        clickedBlock.setBlockData(savedBlockState.getBlockData().clone());
+                        clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);
 
                         setLocationAir(oldLocation);
 
                         givePlayerDirt(executor);
+                        playUseSound(executor,clickedBlock.getLocation());
                         executor.sendMessage("§aDas repln wurde durchgeführt!");
                         return;
                     }
@@ -129,7 +128,8 @@ public class ReplUsage implements Listener {
                 return;
             }
 
-            clickedBlock.setBlockData(savedBlockState.getBlockData().clone());
+            clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);
+            playUseSound(executor,clickedBlock.getLocation());
             executor.sendMessage("§aDas repln wurde durchgeführt!");
         }
     }
@@ -139,6 +139,14 @@ public class ReplUsage implements Listener {
         BlockState  oldBlockState   = world.getBlockState(location);
         oldBlockState.setType(Material.AIR);
         world.setBlockData(location,oldBlockState.getBlockData());
+    }
+
+    private void playUseSound(Player player, Location location){
+        player.playSound(location, Sound.BLOCK_NETHERITE_BLOCK_PLACE,3f,0.5f);
+    }
+
+    private void playSaveSound(Player player, Location location){
+        player.playSound(location, Sound.ENTITY_VILLAGER_YES,0.5f,1f);
     }
 
     private void resetSavedBlock(Player player){

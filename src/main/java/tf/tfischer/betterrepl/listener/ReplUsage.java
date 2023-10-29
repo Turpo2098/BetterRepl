@@ -142,6 +142,9 @@ public class ReplUsage implements Listener {
     }
 
     private void removeOneItem(Player player, Material material){
+        if(player.getGameMode().equals(GameMode.CREATIVE))
+            return;
+
         for(ItemStack item : player.getInventory().getContents()){
             if(item == null)
                 continue;

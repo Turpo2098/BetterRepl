@@ -142,19 +142,14 @@ public class ReplUsage implements Listener {
     }
 
     private void removeOneItem(Player player, Material material){
-        if(player.getGameMode().equals(GameMode.CREATIVE))
-            return;
-
-        for(ItemStack item : player.getInventory().getContents()){
-            System.out.println("Betterrepl: " + item);
+        for(ItemStack item : player.getInventory()){
             if(item == null)
-                continue;
+                break;
             if(item.getType().equals(material)){
                 item.setAmount(item.getAmount()-1);
                 break;
             }
         }
-        player.updateInventory();
     }
 
     private void setLocationAir(Location location){

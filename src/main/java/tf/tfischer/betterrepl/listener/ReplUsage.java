@@ -143,6 +143,8 @@ public class ReplUsage implements Listener {
 
     private void removeOneItem(Player player, Material material){
         for(ItemStack item : player.getInventory()){
+            if(item == null)
+                break;
             if(item.getType().equals(material)){
                 item.setAmount(item.getAmount()-1);
                 break;

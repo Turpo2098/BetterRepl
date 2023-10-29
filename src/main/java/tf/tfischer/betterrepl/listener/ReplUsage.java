@@ -142,14 +142,16 @@ public class ReplUsage implements Listener {
     }
 
     private void removeOneItem(Player player, Material material){
-        for(ItemStack item : player.getInventory()){
+        for(ItemStack item : player.getInventory().getContents()){
+            System.out.println("Betterrepl: " + item);
             if(item == null)
-                break;
+                continue;
             if(item.getType().equals(material)){
                 item.setAmount(item.getAmount()-1);
                 break;
             }
         }
+        player.updateInventory();
     }
 
     private void setLocationAir(Location location){

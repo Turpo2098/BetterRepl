@@ -1,7 +1,7 @@
 name: BetterRepl
 version: '${project.version}'
 main: tf.tfischer.betterrepl.BetterRepl
-api-version: 1.19
+api-version: 1.20
 commands:
   betterrepl:
     description: Hold an Item in your hand to make a Repl Tool

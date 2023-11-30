@@ -92,21 +92,10 @@ public class ReplUsage implements Listener {
 
 
             Block clickedBlock = event.getClickedBlock();
-            if(!executor.hasPermission("betterrepl.bypass")) {   //Bypasspermission
 
-                boolean townyAllowsBuilding = townyIsActive && !canBuildInTowny(executor, event.getClickedBlock()); //Ignore warning becuase of null
-                if (townyAllowsBuilding) {
-                    executor.sendMessage("§cDu kannst nicht wegen Towny bauen!");
-                    return;
-                }
-
-                boolean worldGuardAllowsBuilding = worldGuardIsActive && !canBuildInWorldGuard(executor);
-                if (worldGuardAllowsBuilding) {
-                    executor.sendMessage("§cWorldGuard verbietet dir das!");
-                    return;
-                }
-
-            }
+            boolean canDoStuff = isAllowedToBuild(executor,clickedBlock);
+            if(!canDoStuff)
+                return;
 
             boolean     isTheSameBlock     = clickedBlock.getType().equals(savedBlockState.getType());
 
@@ -193,6 +182,22 @@ public class ReplUsage implements Listener {
 
     private boolean isForbidden(BlockState blockState){
         return blockState instanceof Container;
+    }
+
+    private boolean isAllowedToBuild(Player player, Block block){
+        if(player.hasPermission("betterrepl.bypass")){
+            return true;
+        }
+        if(!canBuildInTowny(player,block)) {
+            player.sendMessage("§cWorldGuard verbietet dir das!");
+            return false;
+        }
+        if(!canBuildInWorldGuard(player)){
+            player.sendMessage("§cDu kannst nicht wegen Towny bauen!");
+            return false;
+        }
+        return true;
+
     }
 
     private boolean canBuildInWorldGuard(Player player){

@@ -62,7 +62,7 @@ public class ReplUsage implements Listener {
             return;
 
         if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){  //Save a Block
-            saveBlockState(event,executor,blockStateMap);
+            saveBlockState(clickedBlock,executor,blockStateMap);
         }
 
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) { //Load a Block
@@ -81,36 +81,11 @@ public class ReplUsage implements Listener {
                 boolean hasClickedDirt = clickedBlock.getType().equals(Material.DIRT);
 
                 if(hasClickedDirt) {
-                    World       world       = clickedBlock.getWorld();
-                    Location    location    = savedBlockState.getLocation();
-                    BlockData blockData = Bukkit.getWorld(world.getUID()).getBlockData(location);
-
-                    boolean oldBlockHasntChanged = blockData != null && blockData.equals(savedBlockState.getBlockData());
-                    if(oldBlockHasntChanged){
-                        Location    oldLocation         = savedBlockState.getLocation();
-                        Material    savedMaterial       = savedBlockState.getType();
-                        Inventory   executorsInventory  = executor.getInventory();
-
-
-                        boolean hasItemInInventory = executorsInventory.contains(savedMaterial);
-                        if(hasItemInInventory){
-                            removeOneItem(executor,savedMaterial);
-                        } else {
-                            resetSavedBlock(executor);
-                            setLocationAir(oldLocation);
-                        }
-                        clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);
-                        givePlayerDirt(executor);
-                        playUseSound(executor,clickedBlock.getLocation());
-                        executor.sendMessage("§aDas den Block verändert!");
-                        return;
-                    }
-                    executor.sendMessage("§aNichts klonen!!!!");
+                    changeDirtBlock(clickedBlock,savedBlockState,executor);
                     return;
 
                 }
                 executor.sendMessage("§aDas ist nicht derselbe Block! Benutze §6" + savedBlockState.getType().name() + "§a!" );
-                return;
             }
 
             clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);
@@ -119,10 +94,38 @@ public class ReplUsage implements Listener {
         }
     }
 
-    private void saveBlockState(PlayerInteractEvent event, Player executor, Map<Player,BlockState> blockStateMap){
-        BlockState newBlockState = event.getClickedBlock().getState();
+    private void changeDirtBlock(Block clickedBlock, BlockState savedBlockState, Player executor) {
+        World world = clickedBlock.getWorld();
+        Location location = savedBlockState.getLocation();
+        BlockData blockData = Bukkit.getWorld(world.getUID()).getBlockData(location);
 
-        if(isForbidden(event.getClickedBlock().getState())){        //Forbid saving Inventory Blocks
+        boolean oldBlockHasntChanged = blockData != null && blockData.equals(savedBlockState.getBlockData());
+        if (oldBlockHasntChanged) {
+            Location oldLocation = savedBlockState.getLocation();
+            Material savedMaterial = savedBlockState.getType();
+            Inventory executorsInventory = executor.getInventory();
+
+
+            boolean hasItemInInventory = executorsInventory.contains(savedMaterial);
+            if (hasItemInInventory) {
+                removeOneItem(executor, savedMaterial);
+            } else {
+                resetSavedBlock(executor);
+                setLocationAir(oldLocation);
+            }
+            clickedBlock.setBlockData(savedBlockState.getBlockData().clone(), false);
+            givePlayerDirt(executor);
+            playUseSound(executor, clickedBlock.getLocation());
+            executor.sendMessage("§aDas den Block verändert!");
+            return;
+        }
+
+    }
+
+    private void saveBlockState(Block block, Player executor, Map<Player,BlockState> blockStateMap){
+        BlockState newBlockState = block.getState();
+
+        if(isForbidden(block.getState())){        //Forbid saving Inventory Blocks
             executor.sendMessage("§aDu darfst diesen nicht Block verwenden!");
             return;
         }

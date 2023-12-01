@@ -23,6 +23,7 @@ import tf.tfischer.betterrepl.BetterRepl;
 import tf.tfischer.betterrepl.util.NBTManager;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class ReplUsage implements Listener {
     private final BetterRepl betterRepl;
@@ -179,7 +180,7 @@ public class ReplUsage implements Listener {
             player.sendMessage("§cWorldGuard verbietet dir das!");
             return false;
         }
-        if(!canBuildInWorldGuard(player)){
+        if(!canBuildInWorldGuard(player,block.getLocation())){
             player.sendMessage("§cDu kannst nicht wegen Towny bauen!");
             return false;
         }
@@ -187,14 +188,14 @@ public class ReplUsage implements Listener {
 
     }
 
-    private boolean canBuildInWorldGuard(Player player){
+    private boolean canBuildInWorldGuard(Player player, Location location){
         //Yoinked out of https://www.spigotmc.org/threads/worldguard-7-0-0-check-if-player-can-build.356669/
 
         boolean result = true;
 
         RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
-        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
-        com.sk89q.worldedit.world.World world = BukkitAdapter.adapt(player.getWorld());
+        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(location);
+        com.sk89q.worldedit.world.World world = BukkitAdapter.adapt(Objects.requireNonNull(location.getWorld()));
         if (!WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(WorldGuardPlugin.inst().wrapPlayer(player), world)) {
             result = query.testState(loc, WorldGuardPlugin.inst().wrapPlayer(player), Flags.BUILD);
         }

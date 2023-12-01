@@ -19,8 +19,6 @@ public class PlayerDisconnect implements Listener {
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event){
         Player player = event.getPlayer();
-        if(player == null)
-            return;
         playerBlockStateMap.remove(player);
     }
 

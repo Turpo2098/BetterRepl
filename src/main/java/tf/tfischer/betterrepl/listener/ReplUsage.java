@@ -62,18 +62,7 @@ public class ReplUsage implements Listener {
             return;
 
         if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){  //Save a Block
-            BlockState newBlockState = event.getClickedBlock().getState();  //Ignore warning because if-clause
-
-            if(isForbidden(event.getClickedBlock().getState())){        //Forbid saving Inventory Blocks
-                executor.sendMessage("§aDu darfst diesen nicht Block verwenden!");
-                return;
-            }
-
-            blockStateMap.put(executor,newBlockState);
-            executor.sendMessage("§aDu hast den Block §6" + newBlockState.getType().name() + " §agespeichert!");
-            playSaveSound(executor,executor.getLocation());
-
-            return;
+            saveBlockState(event,executor,blockStateMap);
         }
 
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) { //Load a Block
@@ -128,6 +117,21 @@ public class ReplUsage implements Listener {
             playUseSound(executor,clickedBlock.getLocation());
             executor.sendMessage("§aDas den Block verändert!");
         }
+    }
+
+    private void saveBlockState(PlayerInteractEvent event, Player executor, Map<Player,BlockState> blockStateMap){
+        BlockState newBlockState = event.getClickedBlock().getState();
+
+        if(isForbidden(event.getClickedBlock().getState())){        //Forbid saving Inventory Blocks
+            executor.sendMessage("§aDu darfst diesen nicht Block verwenden!");
+            return;
+        }
+
+        blockStateMap.put(executor,newBlockState);
+        executor.sendMessage("§aDu hast den Block §6" + newBlockState.getType().name() + " §agespeichert!");
+        playSaveSound(executor,executor.getLocation());
+
+        return;
     }
 
     private void removeOneItem(Player player, Material material){

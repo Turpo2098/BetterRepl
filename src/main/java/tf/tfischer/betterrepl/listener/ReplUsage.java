@@ -54,19 +54,13 @@ public class ReplUsage implements Listener {
 
         Map<Player,BlockState>  blockStateMap = betterRepl.getPlayerStateHashMap();
 
+        Block clickedBlock = event.getClickedBlock();
+
+        boolean canDoStuff = isAllowedToBuild(executor,clickedBlock);
+        if(!canDoStuff)
+            return;
+
         if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){  //Save a Block
-            boolean townyAllowsBuilding = townyIsActive && !canBuildInTowny(executor, event.getClickedBlock()); //Ignore warning becuase of null
-            if (townyAllowsBuilding) {
-                executor.sendMessage("§cDu kannst wegen Towny nichts machen!");
-                return;
-            }
-
-            boolean worldGuardAllowsBuilding = worldGuardIsActive && !canBuildInWorldGuard(executor);
-            if (worldGuardAllowsBuilding) {
-                executor.sendMessage("§cWorldGuard verbietet dir das!");
-                return;
-            }
-
             BlockState newBlockState = event.getClickedBlock().getState();  //Ignore warning because if-clause
 
             if(isForbidden(event.getClickedBlock().getState())){        //Forbid saving Inventory Blocks
@@ -89,13 +83,6 @@ public class ReplUsage implements Listener {
                 executor.sendMessage("§aStudiere erst einmal einen Block mit deinem Hammer!");
                 return;
             }
-
-
-            Block clickedBlock = event.getClickedBlock();
-
-            boolean canDoStuff = isAllowedToBuild(executor,clickedBlock);
-            if(!canDoStuff)
-                return;
 
             boolean     isTheSameBlock     = clickedBlock.getType().equals(savedBlockState.getType());
 

@@ -1,25 +1,25 @@
 package tf.tfischer.betterrepl.listener;
 
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-import tf.tfischer.betterrepl.BetterRepl;
+
+import java.util.Map;
 
 public class PlayerDisconnect implements Listener {
 
-    BetterRepl betterRepl;
+    Map<Player, BlockState> playerBlockStateMap;
 
-    public PlayerDisconnect(BetterRepl betterRepl){
-        this.betterRepl = betterRepl;
+    public PlayerDisconnect(Map<Player,BlockState> blockStateMap){
+        this.playerBlockStateMap = blockStateMap;
     }
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event){
         Player player = event.getPlayer();
-        if(player == null)
-            return;
-        betterRepl.getPlayerStateHashMap().remove(player);
+        playerBlockStateMap.remove(player);
     }
 
 }

@@ -19,7 +19,7 @@ public final class BetterRepl extends JavaPlugin {
         getCommand("betterrepl").setExecutor(new CreateTool(this));                     //The creator for BetterRepl
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new ReplUsage(this),this);                         //The Listener for the ReplTool Event
-        pluginManager.registerEvents(new PlayerDisconnect(this),this);                  //The Listener to remove a player from the hashmap
+        pluginManager.registerEvents(new PlayerDisconnect(playerStateHashMap),this);                  //The Listener to remove a player from the hashmap
     }
 
     @Override

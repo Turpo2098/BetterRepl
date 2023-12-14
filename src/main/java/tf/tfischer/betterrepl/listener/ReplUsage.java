@@ -23,6 +23,7 @@ import tf.tfischer.betterrepl.BetterRepl;
 import tf.tfischer.betterrepl.util.NBTManager;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class ReplUsage implements Listener {
     private final BetterRepl betterRepl;
@@ -54,31 +55,14 @@ public class ReplUsage implements Listener {
 
         Map<Player,BlockState>  blockStateMap = betterRepl.getPlayerStateHashMap();
 
-        if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){  //Save a Block
-            boolean townyAllowsBuilding = townyIsActive && !canBuildInTowny(executor, event.getClickedBlock()); //Ignore warning becuase of null
-            if (townyAllowsBuilding) {
-                executor.sendMessage("§cDu kannst wegen Towny nichts machen!");
-                return;
-            }
+        Block clickedBlock = event.getClickedBlock();
 
-            boolean worldGuardAllowsBuilding = worldGuardIsActive && !canBuildInWorldGuard(executor);
-            if (worldGuardAllowsBuilding) {
-                executor.sendMessage("§cWorldGuard verbietet dir das!");
-                return;
-            }
-
-            BlockState newBlockState = event.getClickedBlock().getState();  //Ignore warning because if-clause
-
-            if(isForbidden(event.getClickedBlock().getState())){        //Forbid saving Inventory Blocks
-                executor.sendMessage("§aDu darfst diesen nicht Block verwenden!");
-                return;
-            }
-
-            blockStateMap.put(executor,newBlockState);
-            executor.sendMessage("§aDu hast den Block §6" + newBlockState.getType().name() + " §agespeichert!");
-            playSaveSound(executor,executor.getLocation());
-
+        boolean canDoStuff = isAllowedToBuild(executor,clickedBlock);
+        if(!canDoStuff)
             return;
+
+        if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){  //Save a Block
+            saveBlockState(clickedBlock,executor,blockStateMap);
         }
 
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) { //Load a Block
@@ -90,24 +74,6 @@ public class ReplUsage implements Listener {
                 return;
             }
 
-
-            Block clickedBlock = event.getClickedBlock();
-            if(!executor.hasPermission("betterrepl.bypass")) {   //Bypasspermission
-
-                boolean townyAllowsBuilding = townyIsActive && !canBuildInTowny(executor, event.getClickedBlock()); //Ignore warning becuase of null
-                if (townyAllowsBuilding) {
-                    executor.sendMessage("§cDu kannst nicht wegen Towny bauen!");
-                    return;
-                }
-
-                boolean worldGuardAllowsBuilding = worldGuardIsActive && !canBuildInWorldGuard(executor);
-                if (worldGuardAllowsBuilding) {
-                    executor.sendMessage("§cWorldGuard verbietet dir das!");
-                    return;
-                }
-
-            }
-
             boolean     isTheSameBlock     = clickedBlock.getType().equals(savedBlockState.getType());
 
             if(!isTheSameBlock){
@@ -115,42 +81,60 @@ public class ReplUsage implements Listener {
                 boolean hasClickedDirt = clickedBlock.getType().equals(Material.DIRT);
 
                 if(hasClickedDirt) {
-                    World       world       = clickedBlock.getWorld();
-                    Location    location    = savedBlockState.getLocation();
-                    BlockData blockData = Bukkit.getWorld(world.getUID()).getBlockData(location);
-
-                    boolean oldBlockHasntChanged = blockData != null && blockData.equals(savedBlockState.getBlockData());
-                    if(oldBlockHasntChanged){
-                        Location    oldLocation         = savedBlockState.getLocation();
-                        Material    savedMaterial       = savedBlockState.getType();
-                        Inventory   executorsInventory  = executor.getInventory();
-
-
-                        boolean hasItemInInventory = executorsInventory.contains(savedMaterial);
-                        if(hasItemInInventory){
-                            removeOneItem(executor,savedMaterial);
-                        } else {
-                            resetSavedBlock(executor);
-                            setLocationAir(oldLocation);
-                        }
-                        clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);
-                        givePlayerDirt(executor);
-                        playUseSound(executor,clickedBlock.getLocation());
-                        executor.sendMessage("§aDas den Block verändert!");
-                        return;
-                    }
-                    executor.sendMessage("§aNichts klonen!!!!");
+                    changeDirtBlock(clickedBlock,savedBlockState,executor);
                     return;
 
                 }
                 executor.sendMessage("§aDas ist nicht derselbe Block! Benutze §6" + savedBlockState.getType().name() + "§a!" );
-                return;
             }
 
             clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);
             playUseSound(executor,clickedBlock.getLocation());
             executor.sendMessage("§aDas den Block verändert!");
         }
+    }
+
+    private void changeDirtBlock(Block clickedBlock, BlockState savedBlockState, Player executor) {
+        World world = clickedBlock.getWorld();
+        Location location = savedBlockState.getLocation();
+        BlockData blockData = Bukkit.getWorld(world.getUID()).getBlockData(location);
+
+        boolean oldBlockHasntChanged = blockData != null && blockData.equals(savedBlockState.getBlockData());
+        if (oldBlockHasntChanged) {
+            Location oldLocation = savedBlockState.getLocation();
+            Material savedMaterial = savedBlockState.getType();
+            Inventory executorsInventory = executor.getInventory();
+
+
+            boolean hasItemInInventory = executorsInventory.contains(savedMaterial);
+            if (hasItemInInventory) {
+                removeOneItem(executor, savedMaterial);
+            } else {
+                resetSavedBlock(executor);
+                setLocationAir(oldLocation);
+            }
+            clickedBlock.setBlockData(savedBlockState.getBlockData().clone(), false);
+            givePlayerDirt(executor);
+            playUseSound(executor, clickedBlock.getLocation());
+            executor.sendMessage("§aDas den Block verändert!");
+            return;
+        }
+
+    }
+
+    private void saveBlockState(Block block, Player executor, Map<Player,BlockState> blockStateMap){
+        BlockState newBlockState = block.getState();
+
+        if(isForbidden(block.getState())){        //Forbid saving Inventory Blocks
+            executor.sendMessage("§aDu darfst diesen nicht Block verwenden!");
+            return;
+        }
+
+        blockStateMap.put(executor,newBlockState);
+        executor.sendMessage("§aDu hast den Block §6" + newBlockState.getType().name() + " §agespeichert!");
+        playSaveSound(executor,executor.getLocation());
+
+        return;
     }
 
     private void removeOneItem(Player player, Material material){
@@ -193,14 +177,30 @@ public class ReplUsage implements Listener {
         return blockState instanceof Container;
     }
 
-    private boolean canBuildInWorldGuard(Player player){
+    private boolean isAllowedToBuild(Player player, Block block){
+        if(player.hasPermission("betterrepl.bypass")){
+            return true;
+        }
+        if(!canBuildInTowny(player,block)) {
+            player.sendMessage("§cWorldGuard verbietet dir das!");
+            return false;
+        }
+        if(!canBuildInWorldGuard(player,block.getLocation())){
+            player.sendMessage("§cDu kannst nicht wegen Towny bauen!");
+            return false;
+        }
+        return true;
+
+    }
+
+    private boolean canBuildInWorldGuard(Player player, Location location){
         //Yoinked out of https://www.spigotmc.org/threads/worldguard-7-0-0-check-if-player-can-build.356669/
 
         boolean result = true;
 
         RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
-        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(player.getLocation());
-        com.sk89q.worldedit.world.World world = BukkitAdapter.adapt(player.getWorld());
+        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(location);
+        com.sk89q.worldedit.world.World world = BukkitAdapter.adapt(Objects.requireNonNull(location.getWorld()));
         if (!WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(WorldGuardPlugin.inst().wrapPlayer(player), world)) {
             result = query.testState(loc, WorldGuardPlugin.inst().wrapPlayer(player), Flags.BUILD);
         }

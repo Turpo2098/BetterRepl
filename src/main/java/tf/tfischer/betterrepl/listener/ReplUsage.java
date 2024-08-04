@@ -174,7 +174,19 @@ public class ReplUsage implements Listener {
     }
 
     private boolean isForbidden(BlockState blockState){
-        return blockState instanceof Container;
+        return blockState instanceof Container
+                || isForbidden(blockState.getType());
+    }
+
+    private boolean isForbidden(Material material){
+        switch (material){
+            case BEDROCK, COMMAND_BLOCK -> {
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     private boolean isAllowedToBuild(Player player, Block block){

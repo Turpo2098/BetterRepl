@@ -1,5 +1,6 @@
 package tf.tfischer.betterrepl.commands;
 
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,10 +29,11 @@ public class CreateTool implements TabCompleter, CommandExecutor {
 
         Player player = (Player) sender;
         ItemStack mainHand = player.getInventory().getItemInMainHand();
-        if(mainHand == null){
+        if(mainHand == null || mainHand.getType().equals(Material.AIR)){
             player.sendMessage("§aDu hast kein Item in der Hand!");
             return true;
         }
+
         NBTManager nbtManager = new NBTManager(betterRepl);
         nbtManager.setSpecificNBTData(mainHand,"BetterRepl","T");
         player.sendMessage("§aDas ist jetzt ein REPL Tool");

@@ -107,8 +107,8 @@ public class ReplUsage implements Listener {
 
 
             boolean hasItemInInventory = executorsInventory.contains(savedMaterial);
-            if (hasItemInInventory) {
-                removeOneItem(executor, savedMaterial);
+            if (removeOneItem(executor,savedMaterial)) { //returns true if it is able to remove an Item
+                return;
             } else {
                 resetSavedBlock(executor);
                 setLocationAir(oldLocation);
@@ -116,7 +116,7 @@ public class ReplUsage implements Listener {
             clickedBlock.setBlockData(savedBlockState.getBlockData().clone(), false);
             givePlayerDirt(executor);
             playUseSound(executor, clickedBlock.getLocation());
-            executor.sendMessage("§aDas den Block verändert!");
+            executor.sendMessage("§aDu hast den Block verändert!");
             return;
         }
 
@@ -137,16 +137,18 @@ public class ReplUsage implements Listener {
         return;
     }
 
-    private void removeOneItem(Player player, Material material){
+    private boolean removeOneItem(Player player, Material material){
 
         for(ItemStack item : player.getInventory()){
             if(item == null)
-                break;
+                continue;
             if(item.getType().equals(material)){
                 item.setAmount(item.getAmount()-1);
-                break;
+                return true;
             }
         }
+        player.sendMessage("§aEs wurde kein Item in Deinem Inventar gefunden.");
+        return false;
     }
 
     private void setLocationAir(Location location){

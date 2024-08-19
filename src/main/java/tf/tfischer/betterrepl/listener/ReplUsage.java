@@ -86,6 +86,7 @@ public class ReplUsage implements Listener {
 
                 }
                 executor.sendMessage("§aDas ist nicht derselbe Block! Benutze §6" + savedBlockState.getType().name() + "§a!" );
+                return;
             }
 
             clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);

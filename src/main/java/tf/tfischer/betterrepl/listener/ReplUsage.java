@@ -103,13 +103,8 @@ public class ReplUsage implements Listener {
         if (oldBlockHasntChanged) {
             Location oldLocation = savedBlockState.getLocation();
             Material savedMaterial = savedBlockState.getType();
-            Inventory executorsInventory = executor.getInventory();
 
-
-            boolean hasItemInInventory = executorsInventory.contains(savedMaterial);
-            if (hasItemInInventory) {
-                removeOneItem(executor, savedMaterial);
-            } else {
+            if (!removeOneItem(executor, savedMaterial)) {
                 resetSavedBlock(executor);
                 setLocationAir(oldLocation);
             }
@@ -137,16 +132,17 @@ public class ReplUsage implements Listener {
         return;
     }
 
-    private void removeOneItem(Player player, Material material){
+    private boolean removeOneItem(Player player, Material material){
 
         for(ItemStack item : player.getInventory()){
             if(item == null)
-                break;
+                continue;
             if(item.getType().equals(material)){
                 item.setAmount(item.getAmount()-1);
-                break;
+                return true;
             }
         }
+        return false;
     }
 
     private void setLocationAir(Location location){

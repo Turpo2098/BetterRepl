@@ -3,6 +3,7 @@ package tf.tfischer.betterrepl;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockState;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
@@ -15,18 +16,21 @@ import tf.tfischer.betterrepl.listener.PlayerDisconnect;
 import tf.tfischer.betterrepl.listener.ReplUsage;
 import tf.tfischer.betterrepl.util.NBTManager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 public final class BetterRepl extends JavaPlugin {
     private HashMap<Player, BlockState> playerStateHashMap = new HashMap<>();
+    private Set<Material> whitelist = new HashSet<>();
+
     @Override
     public void onEnable() {
+        loadWhitelist();
         // Plugin startup logic
         getCommand("betterrepl").setExecutor(new CreateTool(this));                     //The creator for BetterRepl
         PluginManager pluginManager = getServer().getPluginManager();
-        pluginManager.registerEvents(new ReplUsage(this),this);                         //The Listener for the ReplTool Event
+        pluginManager.registerEvents(new ReplUsage(this,whitelist),this);                         //The Listener for the ReplTool Event
         pluginManager.registerEvents(new PlayerDisconnect(playerStateHashMap),this);                  //The Listener to remove a player from the hashmap
         registerReplToolRecipe();
     }
@@ -49,6 +53,34 @@ public void onDisable() {
     public boolean isTownyActive(){
         Plugin plugin = getServer().getPluginManager().getPlugin("Towny");
         return plugin != null;
+    }
+
+    private void loadWhitelist(){
+        File file = new File("plugins/betterrepl/whitelist.yml");
+        if(!file.exists()){
+            try {
+                YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+                configuration.set("whitelist",List.of("AIR"));
+                configuration.save(file);
+                System.out.println("[BetterRepl] Created a config file");
+            } catch (IOException e) {
+                System.out.println("[BetterRepl] Couldn't create a config file.");
+            }
+            return;
+        }
+
+        YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+
+        List<String> strings = configuration.getStringList("whitelist");
+        System.out.println("[BetterRepl] Loading Whitelist.");
+        strings.stream().parallel().forEach(str -> {
+            try {
+                whitelist.add(Material.valueOf(str));
+            } catch (Exception e){
+                System.out.println("Couldn't parse " + str + " as Material.");
+            }
+        });
+        System.out.println("[BetterRepl] Finished parsing whitelist successfully.");
     }
 
     private void registerReplToolRecipe() {

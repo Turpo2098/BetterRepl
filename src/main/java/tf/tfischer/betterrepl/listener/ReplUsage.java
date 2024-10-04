@@ -17,23 +17,25 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import tf.tfischer.betterrepl.BetterRepl;
 import tf.tfischer.betterrepl.util.NBTManager;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class ReplUsage implements Listener {
     private final BetterRepl betterRepl;
     boolean townyIsActive;
     boolean worldGuardIsActive;
+    private Set<Material> whitelist;
 
-    public ReplUsage(BetterRepl betterRepl){
+    public ReplUsage(BetterRepl betterRepl, Set<Material> whitelist){
         this.betterRepl     = betterRepl;
         townyIsActive       = betterRepl.isTownyActive();
         worldGuardIsActive  = betterRepl.isWorldGuardActive();
+        this.whitelist = whitelist;
     }
 
     @EventHandler
@@ -63,6 +65,7 @@ public class ReplUsage implements Listener {
 
         if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){  //Save a Block
             saveBlockState(clickedBlock,executor,blockStateMap);
+            return;
         }
 
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) { //Load a Block
@@ -70,7 +73,7 @@ public class ReplUsage implements Listener {
 
             boolean hasBlockStateLoaded = savedBlockState == null;
             if(hasBlockStateLoaded) {
-                executor.sendMessage("§aStudiere erst einmal einen Block mit deinem Hammer!");
+                executor.sendMessage("§2[§aBetterRepl§2]§7 Studiere erst einmal einen Block mit einem Hammer.");
                 return;
             }
 
@@ -85,13 +88,13 @@ public class ReplUsage implements Listener {
                     return;
 
                 }
-                executor.sendMessage("§aDas ist nicht derselbe Block! Benutze §6" + savedBlockState.getType().name() + "§a!" );
+                executor.sendMessage("§2[§aBetterRepl§2]§7Das ist nicht derselbe Block. Benutze §e" + savedBlockState.getType().name() + "§7!" );
                 return;
             }
 
             clickedBlock.setBlockData(savedBlockState.getBlockData().clone(),false);
             playUseSound(executor,clickedBlock.getLocation());
-            executor.sendMessage("§aDas den Block verändert!");
+            executor.sendMessage("§2[§aBetterRepl§2]§7 Du hast den Block verändert!");
         }
     }
 
@@ -112,8 +115,7 @@ public class ReplUsage implements Listener {
             clickedBlock.setBlockData(savedBlockState.getBlockData().clone(), false);
             givePlayerDirt(executor);
             playUseSound(executor, clickedBlock.getLocation());
-            executor.sendMessage("§aDas den Block verändert!");
-            return;
+            executor.sendMessage("§2[§aBetterRepl§2]§7 Du hast den Block verändert!");
         }
 
     }
@@ -121,16 +123,14 @@ public class ReplUsage implements Listener {
     private void saveBlockState(Block block, Player executor, Map<Player,BlockState> blockStateMap){
         BlockState newBlockState = block.getState();
 
-        if(isForbidden(block.getState())){        //Forbid saving Inventory Blocks
-            executor.sendMessage("§aDu darfst diesen nicht Block verwenden!");
+        if(!whitelist.contains(newBlockState.getType())){        //Forbid saving Inventory Blocks
+            executor.sendMessage("§2[§aBetterRepl§2]§7 Dieser Block ist nicht in der Whitelist.");
             return;
         }
 
         blockStateMap.put(executor,newBlockState);
-        executor.sendMessage("§aDu hast den Block §6" + newBlockState.getType().name() + " §agespeichert!");
+        executor.sendMessage("§2[§aBetterRepl§2]§7 Du hast den Block §e" + newBlockState.getType().name() + " §7gespeichert!");
         playSaveSound(executor,executor.getLocation());
-
-        return;
     }
 
     private boolean removeOneItem(Player player, Material material){
@@ -191,11 +191,11 @@ public class ReplUsage implements Listener {
             return true;
         }
         if(!canBuildInTowny(player,block)) {
-            player.sendMessage("§cWorldGuard verbietet dir das!");
+            player.sendMessage("§2[§aBetterRepl§2]§7 WorldGuard verbietet dir das!");
             return false;
         }
         if(!canBuildInWorldGuard(player,block.getLocation())){
-            player.sendMessage("§cDu kannst nicht wegen Towny bauen!");
+            player.sendMessage("§2[§aBetterRepl§2]§7 Du kannst nicht wegen Towny bauen!");
             return false;
         }
         return true;

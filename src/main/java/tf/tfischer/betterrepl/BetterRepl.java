@@ -32,7 +32,6 @@ public final class BetterRepl extends JavaPlugin {
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new ReplUsage(this,whitelist),this);                         //The Listener for the ReplTool Event
         pluginManager.registerEvents(new PlayerDisconnect(playerStateHashMap),this);                  //The Listener to remove a player from the hashmap
-        registerReplToolRecipe();
     }
 
     @Override
@@ -83,26 +82,4 @@ public void onDisable() {
         System.out.println("[BetterRepl] Finished parsing whitelist successfully.");
     }
 
-    private void registerReplToolRecipe() {
-        ItemStack item = new ItemStack(Material.DIAMOND_HOE);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("Repl Tool");
-        List<String> lore = new ArrayList<>();
-        lore.add("Benutze dieses Werkzeug um Dinge zu kopieren");
-        lore.add("Hammer");
-        meta.setLore(lore);
-        item.setItemMeta(meta);
-
-        // Set the NBT data
-        NBTManager nbtManager = new NBTManager(this);
-        item = nbtManager.setSpecificNBTData(item, "BetterRepl", "T");
-
-        NamespacedKey key = new NamespacedKey(this, "hammer");
-        ShapedRecipe recipe = new ShapedRecipe(key, item);
-        recipe.shape("D D", "DSD", " S ");
-        recipe.setIngredient('D', Material.DIAMOND);
-        recipe.setIngredient('S', Material.STICK);
-
-        getServer().addRecipe(recipe);
-    }
 }

@@ -170,22 +170,6 @@ public class ReplUsage implements Listener {
         player.updateInventory();
     }
 
-    private boolean isForbidden(BlockState blockState){
-        return blockState instanceof Container
-                || isForbidden(blockState.getType());
-    }
-
-    private boolean isForbidden(Material material){
-        switch (material){
-            case BEDROCK, COMMAND_BLOCK -> {
-                return true;
-            }
-            default -> {
-                return false;
-            }
-        }
-    }
-
     private boolean isAllowedToBuild(Player player, Block block){
         if(player.hasPermission("betterrepl.bypass")){
             return true;
@@ -198,8 +182,7 @@ public class ReplUsage implements Listener {
             player.sendMessage("§2[§aBetterRepl§2]§7 Du kannst nicht wegen Towny bauen!");
             return false;
         }
-        return true;
-
+        return false;
     }
 
     private boolean canBuildInWorldGuard(Player player, Location location){

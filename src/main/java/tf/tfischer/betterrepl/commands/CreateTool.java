@@ -24,6 +24,11 @@ public class CreateTool implements TabCompleter, CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if(args.length == 1 && args[0].equals("reload") && sender.hasPermission("betterrepl.admin")){
+            betterRepl.loadWhitelist();
+            sender.sendMessage("[Betterrepl] Reloaded Whitelist with " + betterRepl.getWhitelistSize() + " materials!");
+            return true;
+        }
         if(!(sender instanceof Player))
             return true;
 

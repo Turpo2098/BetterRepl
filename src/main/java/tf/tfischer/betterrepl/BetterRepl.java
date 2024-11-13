@@ -22,7 +22,7 @@ import java.util.*;
 
 public final class BetterRepl extends JavaPlugin {
     private HashMap<Player, BlockState> playerStateHashMap = new HashMap<>();
-    private Set<Material> whitelist = new HashSet<>();
+    private Set<Material> whitelist;
 
     @Override
     public void onEnable() {
@@ -55,7 +55,11 @@ public void onDisable() {
         return plugin != null;
     }
 
-    private void loadWhitelist(){
+    public int getWhitelistSize(){
+        return whitelist.size();
+    }
+
+    public void loadWhitelist(){
         File file = new File("plugins/betterrepl/whitelist.yml");
         if(!file.exists()){
             try {
@@ -69,6 +73,7 @@ public void onDisable() {
             return;
         }
 
+        whitelist= new HashSet<>();
         YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
 
         List<String> strings = configuration.getStringList("whitelist");

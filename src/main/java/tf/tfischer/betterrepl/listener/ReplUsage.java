@@ -150,7 +150,7 @@ public class ReplUsage implements Listener {
         World       world           = location.getWorld();
         BlockState  oldBlockState   = world.getBlockState(location);
         oldBlockState.setType(Material.AIR);
-        world.setBlockData(location,oldBlockState.getBlockData());
+        world.getBlockAt(location).setBlockData(oldBlockState.getBlockData(),false);
     }
 
     private void playUseSound(Player player, Location location){

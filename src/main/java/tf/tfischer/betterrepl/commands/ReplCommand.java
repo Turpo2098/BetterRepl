@@ -35,7 +35,8 @@ public class ReplCommand implements TabCompleter, CommandExecutor {
             }
 
             betterRepl.loadWhitelist();
-            sender.sendMessage("§2[§aBetterRepl§2]§7 You reloaded the whitelist.");
+            int amountOfMaterials = betterRepl.getWhitelist().size();
+            sender.sendMessage("§2[§aBetterRepl§2]§7 You reloaded the whitelist and it now has §e" + amountOfMaterials + " §7materials.");
             return true;
         }
 

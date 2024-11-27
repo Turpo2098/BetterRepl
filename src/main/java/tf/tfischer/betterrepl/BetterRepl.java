@@ -49,6 +49,10 @@ public void onDisable() {
         return plugin != null;
     }
 
+    public Set<Material> getWhitelist() {
+        return whitelist;
+    }
+
     public void loadWhitelist(){
         whitelist = new HashSet<>();
         File file = new File("plugins/betterrepl/whitelist.yml");

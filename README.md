@@ -9,5 +9,15 @@ Save a Blockstate by leftclicking a Block. If you want to apply it rightclick on
 
 | Permission           | Description                                 |
 | --------------------- | ------------------------------------------- |
-| `betterrepl.admin`   | Permission to create a REPL-Tool            |
+| `betterrepl.create`   | Permission to create a REPL-Tool            |
 | `betterrepl.bypass`  | Bypass Towny and Worldguard protection      |
+
+# Whitelist
+To edit the whitelist got to the file plugins/betterrepl/whitelist.yml and add the blocks which you want to be able to edit
+e.g.
+````
+whitelist:
+- WHITE_CARPET
+- CHAIN
+````
+allows the player to edit white carpet and chain's.

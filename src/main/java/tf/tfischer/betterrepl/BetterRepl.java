@@ -1,20 +1,15 @@
 package tf.tfischer.betterrepl;
 
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockState;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import tf.tfischer.betterrepl.commands.CreateTool;
+import tf.tfischer.betterrepl.commands.ReplCommand;
 import tf.tfischer.betterrepl.listener.PlayerDisconnect;
 import tf.tfischer.betterrepl.listener.ReplUsage;
-import tf.tfischer.betterrepl.util.NBTManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +23,7 @@ public final class BetterRepl extends JavaPlugin {
     public void onEnable() {
         loadWhitelist();
         // Plugin startup logic
-        getCommand("betterrepl").setExecutor(new CreateTool(this));                     //The creator for BetterRepl
+        getCommand("betterrepl").setExecutor(new ReplCommand(this));                     //The creator for BetterRepl
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new ReplUsage(this,whitelist),this);                         //The Listener for the ReplTool Event
         pluginManager.registerEvents(new PlayerDisconnect(playerStateHashMap),this);                  //The Listener to remove a player from the hashmap

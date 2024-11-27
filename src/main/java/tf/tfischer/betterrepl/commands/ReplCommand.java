@@ -15,10 +15,10 @@ import tf.tfischer.betterrepl.util.NBTManager;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreateTool implements TabCompleter, CommandExecutor {
+public class ReplCommand implements TabCompleter, CommandExecutor {
 
     private BetterRepl betterRepl;
-    public CreateTool(BetterRepl betterRepl){
+    public ReplCommand(BetterRepl betterRepl){
         this.betterRepl = betterRepl;
     }
 

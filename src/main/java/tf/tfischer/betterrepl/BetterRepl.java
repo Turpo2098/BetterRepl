@@ -17,7 +17,7 @@ import java.util.*;
 
 public final class BetterRepl extends JavaPlugin {
     private HashMap<Player, BlockState> playerStateHashMap = new HashMap<>();
-    private Set<Material> whitelist = new HashSet<>();
+    private Set<Material> whitelist;
 
     @Override
     public void onEnable() {
@@ -49,7 +49,8 @@ public void onDisable() {
         return plugin != null;
     }
 
-    private void loadWhitelist(){
+    public void loadWhitelist(){
+        whitelist = new HashSet<>();
         File file = new File("plugins/betterrepl/whitelist.yml");
         if(!file.exists()){
             try {

@@ -24,26 +24,61 @@ public class ReplCommand implements TabCompleter, CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if(!(sender instanceof Player))
+        if(args.length == 0){
+            sender.sendMessage("§2[§aBetterRepl§2]§7 Please use §6/betterrepl [create|reload]");
             return true;
+        }
+        if(args[0].equalsIgnoreCase("reload")){
+            if(!sender.hasPermission("betterrepl.reload")){
+                sendPermissionError(sender);
+                return true;
+            }
 
-        Player player = (Player) sender;
-        ItemStack mainHand = player.getInventory().getItemInMainHand();
-        if(mainHand == null || mainHand.getType().equals(Material.AIR)){
-            player.sendMessage("§aDu hast kein Item in der Hand!");
+            betterRepl.loadWhitelist();
+            sender.sendMessage("§2[§aBetterRepl§2]§7 You reloaded the whitelist.");
             return true;
         }
 
-        NBTManager nbtManager = new NBTManager(betterRepl);
-        nbtManager.setSpecificNBTData(mainHand,"BetterRepl","T");
-        player.sendMessage("§aDas ist jetzt ein REPL Tool");
-        player.updateInventory();
+        if(args[0].equalsIgnoreCase("create")){
+            if(sender.hasPermission("betterrepl.create")){
+                sendPermissionError(sender);
+                return true;
+            }
+
+            if(!(sender instanceof Player))
+                return true;
+
+            Player player = (Player) sender;
+            ItemStack mainHand = player.getInventory().getItemInMainHand();
+            if(mainHand == null || mainHand.getType().equals(Material.AIR)){
+                player.sendMessage("§2[§aBetterRepl§2]§7 Du hast kein Item in der Hand.");
+                return true;
+            }
+
+            NBTManager nbtManager = new NBTManager(betterRepl);
+            nbtManager.setSpecificNBTData(mainHand,"BetterRepl","T");
+            player.sendMessage("§2[§aBetterRepl§2]§7 Das ist jetzt ein REPL Tool.");
+            player.updateInventory();
+            return true;
+        }
         return true;
+    }
+
+    private void sendPermissionError(CommandSender sender){
+        sender.sendMessage("§2[§aBetterRepl§2]§7 You don't have the permission to do that.");
     }
 
     @Nullable
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        return new ArrayList<>();
+        if(args.length >= 2)
+            return List.of();
+        List<String> list = new ArrayList<>();
+        if(sender.hasPermission("betterrepl.reload"))
+            list.add("reload");
+        if(sender.hasPermission("betterrepl.create"))
+            list.add("create");
+
+        return list;
     }
 }

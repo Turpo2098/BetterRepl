@@ -5,4 +5,3 @@ api-version: 1.20
 commands:
   betterrepl:
     usage: This adds the repl functionality to the Item in your main hand
-    permission: betterrepl.create

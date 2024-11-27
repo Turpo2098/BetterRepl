@@ -40,7 +40,7 @@ public class ReplCommand implements TabCompleter, CommandExecutor {
         }
 
         if(args[0].equalsIgnoreCase("create")){
-            if(sender.hasPermission("betterrepl.create")){
+            if(!sender.hasPermission("betterrepl.create")){
                 sendPermissionError(sender);
                 return true;
             }

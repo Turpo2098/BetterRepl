@@ -59,7 +59,7 @@ public void onDisable() {
         if(!file.exists()){
             try {
                 YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
-                configuration.set("whitelist",List.of("AIR"));
+                configuration.set("whitelist", getStandardWhitelist());
                 configuration.save(file);
                 System.out.println("[BetterRepl] Created a config file");
             } catch (IOException e) {
@@ -80,6 +80,10 @@ public void onDisable() {
             }
         });
         System.out.println("[BetterRepl] Finished parsing whitelist successfully.");
+    }
+
+    private List<String> getStandardWhitelist(){
+        return getConfig().getStringList("standard_whitelist");
     }
 
 }

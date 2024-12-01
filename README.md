@@ -7,10 +7,11 @@ Save a Blockstate by leftclicking a Block. If you want to apply it rightclick on
 
 # Permissions
 
-| Permission           | Description                                 |
-| --------------------- | ------------------------------------------- |
-| `betterrepl.create`   | Permission to create a REPL-Tool            |
-| `betterrepl.bypass`  | Bypass Towny and Worldguard protection      |
+| Permission          | Description                            |
+|---------------------|----------------------------------------|
+| `betterrepl.create` | Permission to create a REPL-Tool       
+| `betterrepl.reload` | Permission reload the whitelist        |
+| `betterrepl.bypass` | Bypass Towny and Worldguard protection |
 
 # Whitelist
 To edit the whitelist got to the file plugins/betterrepl/whitelist.yml and add the blocks which you want to be able to edit

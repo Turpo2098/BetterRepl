@@ -8,6 +8,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import tf.tfischer.betterrepl.commands.ReplCommand;
+import tf.tfischer.betterrepl.events.listener.TownyListener;
+import tf.tfischer.betterrepl.events.listener.WhitelistListener;
+import tf.tfischer.betterrepl.events.listener.WorldGuardListener;
 import tf.tfischer.betterrepl.listener.PlayerDisconnect;
 import tf.tfischer.betterrepl.listener.ReplUsage;
 
@@ -27,10 +30,17 @@ public final class BetterRepl extends JavaPlugin {
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new ReplUsage(this,whitelist),this);                         //The Listener for the ReplTool Event
         pluginManager.registerEvents(new PlayerDisconnect(playerStateHashMap),this);                  //The Listener to remove a player from the hashmap
+
+        //Register Repl Events
+        getServer().getPluginManager().registerEvents(new WhitelistListener(this),this);
+        if(isTownyActive())
+            getServer().getPluginManager().registerEvents(new TownyListener(),this);
+        if(isWorldGuardActive())
+            getServer().getPluginManager().registerEvents(new WorldGuardListener(),this);
     }
 
     @Override
-public void onDisable() {
+    public void onDisable() {
         // Plugin shutdown logic
     }
 

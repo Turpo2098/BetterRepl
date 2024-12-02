@@ -19,11 +19,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import tf.tfischer.betterrepl.BetterRepl;
+import tf.tfischer.betterrepl.events.ReplEvent;
 import tf.tfischer.betterrepl.util.NBTManager;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class ReplUsage implements Listener {
     private final BetterRepl betterRepl;
@@ -35,6 +34,7 @@ public class ReplUsage implements Listener {
         townyIsActive       = betterRepl.isTownyActive();
         worldGuardIsActive  = betterRepl.isWorldGuardActive();
     }
+
 
     private Set<Material> getWhitelist(){
         return betterRepl.getWhitelist();
@@ -61,9 +61,12 @@ public class ReplUsage implements Listener {
 
         Block clickedBlock = event.getClickedBlock();
 
-        boolean canDoStuff = isAllowedToBuild(executor,clickedBlock);
-        if(!canDoStuff)
-            return;
+        if(!executor.hasPermission("betterrepl.bypass")){
+            ReplEvent replEvent = new ReplEvent(clickedBlock.getLocation(),executor,clickedBlock.getType());
+            Bukkit.getPluginManager().callEvent(replEvent);
+            if(replEvent.isCancelled())
+                return;
+        }
 
         if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){  //Save a Block
             saveBlockState(clickedBlock,executor,blockStateMap);
@@ -172,37 +175,4 @@ public class ReplUsage implements Listener {
         player.updateInventory();
     }
 
-    private boolean isAllowedToBuild(Player player, Block block){
-        if(player.hasPermission("betterrepl.bypass")){
-            return true;
-        }
-        if(!canBuildInTowny(player,block)) {
-            player.sendMessage("§2[§aBetterRepl§2]§7 WorldGuard verbietet dir das!");
-            return false;
-        }
-        if(!canBuildInWorldGuard(player,block.getLocation())){
-            player.sendMessage("§2[§aBetterRepl§2]§7 Du kannst nicht wegen Towny bauen!");
-            return false;
-        }
-        return false;
-    }
-
-    private boolean canBuildInWorldGuard(Player player, Location location){
-        //Yoinked out of https://www.spigotmc.org/threads/worldguard-7-0-0-check-if-player-can-build.356669/
-
-        boolean result = true;
-
-        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
-        com.sk89q.worldedit.util.Location loc = BukkitAdapter.adapt(location);
-        com.sk89q.worldedit.world.World world = BukkitAdapter.adapt(Objects.requireNonNull(location.getWorld()));
-        if (!WorldGuard.getInstance().getPlatform().getSessionManager().hasBypass(WorldGuardPlugin.inst().wrapPlayer(player), world)) {
-            result = query.testState(loc, WorldGuardPlugin.inst().wrapPlayer(player), Flags.BUILD);
-        }
-        return result;
-    }
-
-    private boolean canBuildInTowny(Player player, Block block){
-        //Yoinked out of https://github.com/TownyAdvanced/Towny/wiki/TownyAPI#checking-if-a-player-can-builddestroy-somewhere
-        return PlayerCacheUtil.getCachePermission(player, block.getLocation(), block.getType(), TownyPermission.ActionType.BUILD);
-    }
 }

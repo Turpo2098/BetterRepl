@@ -15,6 +15,10 @@ public class WhitelistListener implements Listener {
 
     @EventHandler
     public void onRepl(ReplEvent event){
+        if(event.getPlayer().hasPermission("betterrepl.bypass")){
+            event.setBypass(true);
+            return;
+        }
         Material material = event.getClickedBlock();
         if(plugin.getWhitelist().contains(material))
             return;

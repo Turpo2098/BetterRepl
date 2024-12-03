@@ -61,12 +61,10 @@ public class ReplUsage implements Listener {
 
         Block clickedBlock = event.getClickedBlock();
 
-        if(!executor.hasPermission("betterrepl.bypass")){
-            ReplEvent replEvent = new ReplEvent(clickedBlock.getLocation(),executor,clickedBlock.getType());
-            Bukkit.getPluginManager().callEvent(replEvent);
-            if(replEvent.isCancelled())
-                return;
-        }
+        ReplEvent replEvent = new ReplEvent(clickedBlock.getLocation(),executor,clickedBlock.getType());
+        Bukkit.getPluginManager().callEvent(replEvent);
+        if(replEvent.isCancelled())
+            return;
 
         if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){  //Save a Block
             saveBlockState(clickedBlock,executor,blockStateMap);

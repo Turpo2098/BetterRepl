@@ -73,7 +73,7 @@ public void onDisable() {
 
         List<String> strings = configuration.getStringList("whitelist");
         System.out.println("[BetterRepl] Loading Whitelist.");
-        strings.stream().parallel().forEach(str -> {
+        strings.forEach(str -> {
             try {
                 whitelist.add(Material.valueOf(str));
             } catch (Exception e){

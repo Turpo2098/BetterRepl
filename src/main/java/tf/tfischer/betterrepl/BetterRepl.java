@@ -32,7 +32,6 @@ public final class BetterRepl extends JavaPlugin {
         pluginManager.registerEvents(new PlayerDisconnect(playerStateHashMap),this);                  //The Listener to remove a player from the hashmap
 
         //Register Repl Events
-        getServer().getPluginManager().registerEvents(new WhitelistListener(this),this);
         if(isTownyActive())
             getServer().getPluginManager().registerEvents(new TownyListener(),this);
         if(isWorldGuardActive())

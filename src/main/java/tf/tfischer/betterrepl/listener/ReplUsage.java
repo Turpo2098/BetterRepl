@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import tf.tfischer.betterrepl.BetterRepl;
 import tf.tfischer.betterrepl.events.ReplEvent;
+import tf.tfischer.betterrepl.events.listener.WhitelistListener;
 import tf.tfischer.betterrepl.util.NBTManager;
 
 import java.util.*;
@@ -28,11 +29,13 @@ public class ReplUsage implements Listener {
     private final BetterRepl betterRepl;
     boolean townyIsActive;
     boolean worldGuardIsActive;
+    WhitelistListener whitelistListener;
 
     public ReplUsage(BetterRepl betterRepl, Set<Material> whitelist){
         this.betterRepl     = betterRepl;
         townyIsActive       = betterRepl.isTownyActive();
         worldGuardIsActive  = betterRepl.isWorldGuardActive();
+        whitelistListener = new WhitelistListener(betterRepl);
     }
 
 
@@ -61,7 +64,13 @@ public class ReplUsage implements Listener {
 
         Block clickedBlock = event.getClickedBlock();
 
+        //Calls the Event
         ReplEvent replEvent = new ReplEvent(clickedBlock.getLocation(),executor,clickedBlock.getType());
+
+        whitelistListener.onRepl(replEvent);
+        if(replEvent.isCancelled())
+            return;
+
         Bukkit.getPluginManager().callEvent(replEvent);
         if(replEvent.isCancelled())
             return;

@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 public class ReplEvent extends Event implements Cancellable {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
-    boolean bypass = false;
     boolean canceled = false;
     Location location;
     Player player;
@@ -39,14 +38,8 @@ public class ReplEvent extends Event implements Cancellable {
         return HANDLER_LIST;
     }
 
-    public void setBypass(boolean bypass) {
-        this.bypass = bypass;
-    }
-
     @Override
     public boolean isCancelled() {
-        if(bypass)
-            return false;
         return canceled;
     }
 

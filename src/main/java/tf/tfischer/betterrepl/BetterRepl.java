@@ -55,7 +55,7 @@ public void onDisable() {
         return plugin != null;
     }
 
-    private void loadWhitelist(){
+    public void loadWhitelist(){
         File file = new File("plugins/betterrepl/whitelist.yml");
         if(!file.exists()){
             try {
@@ -81,6 +81,10 @@ public void onDisable() {
             }
         });
         System.out.println("[BetterRepl] Finished parsing whitelist successfully.");
+    }
+
+    public Set<Material> getWhitelist() {
+        return whitelist;
     }
 
     private void registerReplToolRecipe() {

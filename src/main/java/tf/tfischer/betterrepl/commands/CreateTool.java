@@ -27,6 +27,12 @@ public class CreateTool implements TabCompleter, CommandExecutor {
         if(!(sender instanceof Player))
             return true;
 
+        if(args.length == 1 && args[0].equals("reload")){
+            betterRepl.loadWhitelist();
+            sender.sendMessage("You reloaded the whitelist");
+            return true;
+        }
+
         Player player = (Player) sender;
         ItemStack mainHand = player.getInventory().getItemInMainHand();
         if(mainHand == null || mainHand.getType().equals(Material.AIR)){

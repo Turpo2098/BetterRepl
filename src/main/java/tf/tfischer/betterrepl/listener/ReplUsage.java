@@ -29,13 +29,15 @@ public class ReplUsage implements Listener {
     private final BetterRepl betterRepl;
     boolean townyIsActive;
     boolean worldGuardIsActive;
-    private Set<Material> whitelist;
 
     public ReplUsage(BetterRepl betterRepl, Set<Material> whitelist){
         this.betterRepl     = betterRepl;
         townyIsActive       = betterRepl.isTownyActive();
         worldGuardIsActive  = betterRepl.isWorldGuardActive();
-        this.whitelist = whitelist;
+    }
+
+    private Set<Material> getWhitelist(){
+        return betterRepl.getWhitelist();
     }
 
     @EventHandler
@@ -123,7 +125,7 @@ public class ReplUsage implements Listener {
     private void saveBlockState(Block block, Player executor, Map<Player,BlockState> blockStateMap){
         BlockState newBlockState = block.getState();
 
-        if(!whitelist.contains(newBlockState.getType())){        //Forbid saving Inventory Blocks
+        if(!getWhitelist().contains(newBlockState.getType())){        //Forbid saving Inventory Blocks
             executor.sendMessage("§2[§aBetterRepl§2]§7 Dieser Block ist nicht in der Whitelist.");
             return;
         }
@@ -170,21 +172,6 @@ public class ReplUsage implements Listener {
         player.updateInventory();
     }
 
-    private boolean isForbidden(BlockState blockState){
-        return blockState instanceof Container
-                || isForbidden(blockState.getType());
-    }
-
-    private boolean isForbidden(Material material){
-        switch (material){
-            case BEDROCK, COMMAND_BLOCK -> {
-                return true;
-            }
-            default -> {
-                return false;
-            }
-        }
-    }
 
     private boolean isAllowedToBuild(Player player, Block block){
         if(player.hasPermission("betterrepl.bypass")){
